@@ -1,0 +1,120 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "flexibleServers_mysql_okcu_cl_name": {
+            "defaultValue": "mysql-okcu-cl",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers",
+            "apiVersion": "2021-12-01-preview",
+            "name": "mysql-okcu-cl",
+            "location": "East US",
+            "sku": {
+                "name": "Standard_B1s",
+                "tier": "Burstable"
+            },
+            "properties": {
+                "administratorLogin": "ck",
+                "storage": {
+                    "storageSizeGB": 20,
+                    "iops": 360,
+                    "autoGrow": "Enabled"
+                },
+                "version": "5.7",
+                "availabilityZone": "3",
+                "maintenanceWindow": {
+                    "customWindow": "Disabled",
+                    "dayOfWeek": 0,
+                    "startHour": 0,
+                    "startMinute": 0
+                },
+                "replicationRole": "None",
+                "network": {},
+                "backup": {
+                    "backupRetentionDays": 1,
+                    "geoRedundantBackup": "Disabled"
+                },
+                "highAvailability": {
+                    "mode": "Disabled"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_cl_name'), '/information_schema')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_cl_name'))]"
+            ],
+            "properties": {
+                "charset": "utf8",
+                "collation": "utf8_general_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_cl_name'), '/mysql')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_cl_name'))]"
+            ],
+            "properties": {
+                "charset": "latin1",
+                "collation": "latin1_swedish_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_cl_name'), '/performance_schema')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_cl_name'))]"
+            ],
+            "properties": {
+                "charset": "utf8",
+                "collation": "utf8_general_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_cl_name'), '/sys')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_cl_name'))]"
+            ],
+            "properties": {
+                "charset": "utf8",
+                "collation": "utf8_general_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_cl_name'), '/AllowAll_2022-11-21_12-37-40')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_cl_name'))]"
+            ],
+            "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "255.255.255.255"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_cl_name'), '/ClientIPAddress_2022-11-21_12-38-33')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_cl_name'))]"
+            ],
+            "properties": {
+                "startIpAddress": "139.78.253.192",
+                "endIpAddress": "139.78.253.192"
+            }
+        }
+    ]
+}
