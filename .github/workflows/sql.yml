@@ -17,6 +17,6 @@ jobs:
         
         - uses: azure/mysql@v1
           with:
-              server-name: mysql-okcu-cloud 
+              server-name: mysql-okcu-cloud.mysql.database.azure.com 
               connection-string: ${{ secrets.AZURE_MYSQL_PASSWORD }}
               sql-file: './data.sql'
