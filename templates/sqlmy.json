@@ -1,161 +1,120 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "administratorLogin": {
-        "type": "string"
-      },
-      "administratorLoginPassword": {
-        "type": "securestring"
-      },
-      "location": {
-        "type": "string"
-      },
-      "myocu-sql-cld": {
-        "type": "string"
-      },
-      "serverEdition": {
-        "type": "string",
-        "defaultValue": "Burstable",
-        "metadata": {
-          "description": "The tier of the particular SKU, e.g. Burstable, GeneralPurpose, MemoryOptimized. High Availability is available only for GeneralPurpose and MemoryOptimized sku."
+        "flexibleServers_mysql_okcu_name": {
+            "defaultValue": "mysql-okcu",
+            "type": "String"
         }
-      },
-      "skuName": {
-        "type": "string",
-        "defaultValue": "Standard_B1ms",
-        "metadata": {
-          "description": "The name of the sku, e.g. Standard_D32ds_v4."
-        }
-      },
-      "storageSizeGB": {
-        "type": "int"
-      },
-      "storageIops": {
-        "type": "int"
-      },
-      "storageAutogrow": {
-        "type": "string",
-        "defaultValue": "Enabled"
-      },
-      "availabilityZone": {
-        "type": "string",
-        "metadata": {
-          "description": "Availability Zone information of the server. (Leave blank for No Preference)."
-        }
-      },
-      "version": {
-        "type": "string"
-      },
-      "tags": {
-        "type": "object",
-        "defaultValue": {}
-      },
-      "haEnabled": {
-        "type": "string",
-        "defaultValue": "Disabled",
-        "metadata": {
-          "description": "High availability mode for a server : Disabled, SameZone, or ZoneRedundant"
-        }
-      },
-      "standbyAvailabilityZone": {
-        "type": "string",
-        "metadata": {
-          "description": "Availability zone of the standby server."
-        }
-      },
-      "firewallRules": {
-        "type": "object",
-        "defaultValue": {}
-      },
-      "backupRetentionDays": {
-        "type": "int"
-      },
-      "geoRedundantBackup": {
-        "type": "string"
-      },
-      "databaseName": {
-        "type": "string"
-      }
     },
-    "variables": {
-      "api": "2021-05-01",
-      "firewallRules": "[parameters('firewallRules').rules]"
-    },
+    "variables": {},
     "resources": [
-      {
-        "type": "Microsoft.DBforMySQL/flexibleServers",
-        "apiVersion": "[variables('api')]",
-        "location": "[parameters('location')]",
-        "name": "[parameters('myocu-sql-cld')]",
-        "sku": {
-          "name": "[parameters('skuName')]",
-          "tier": "[parameters('serverEdition')]"
-        },
-        "properties": {
-          "version": "[parameters('version')]",
-          "administratorLogin": "[parameters('administratorLogin')]",
-          "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
-          "availabilityZone": "[parameters('availabilityZone')]",
-          "highAvailability": {
-            "mode": "[parameters('haEnabled')]",
-            "standbyAvailabilityZone": "[parameters('standbyAvailabilityZone')]"
-          },
-          "Storage": {
-            "storageSizeGB": "[parameters('storageSizeGB')]",
-            "iops": "[parameters('storageIops')]",
-            "autogrow": "[parameters('storageAutogrow')]"
-          },
-          "Backup": {
-            "backupRetentionDays": "[parameters('backupRetentionDays')]",
-            "geoRedundantBackup": "[parameters('geoRedundantBackup')]"
-          }
-        },
-        "tags": "[parameters('tags')]"
-      },
-      {
-        "condition": "[greater(length(variables('firewallRules')), 0)]",
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2021-04-01",
-        "name": "[concat('firewallRules-', copyIndex())]",
-        "copy": {
-          "count": "[if(greater(length(variables('firewallRules')), 0), length(variables('firewallRules')), 1)]",
-          "mode": "Serial",
-          "name": "firewallRulesIterator"
-        },
-        "dependsOn": [
-          "[concat('Microsoft.DBforMySQL/flexibleServers/', parameters('myocu-sql-cld'))]"
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "template": {
-            "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "resources": [
-              {
-                "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
-                "name": "[concat(parameters('myocu-sql-cld'),'/',variables('firewallRules')[copyIndex()].name)]",
-                "apiVersion": "[variables('api')]",
-                "properties": {
-                  "StartIpAddress": "[variables('firewallRules')[copyIndex()].startIPAddress]",
-                  "EndIpAddress": "[variables('firewallRules')[copyIndex()].endIPAddress]"
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers",
+            "apiVersion": "2021-12-01-preview",
+            "name": "mysql-okcu",
+            "location": "East US",
+            "sku": {
+                "name": "Standard_B1s",
+                "tier": "Burstable"
+            },
+            "properties": {
+                "administratorLogin": "ck",
+                "storage": {
+                    "storageSizeGB": 20,
+                    "iops": 360,
+                    "autoGrow": "Enabled"
+                },
+                "version": "5.7",
+                "availabilityZone": "3",
+                "maintenanceWindow": {
+                    "customWindow": "Disabled",
+                    "dayOfWeek": 0,
+                    "startHour": 0,
+                    "startMinute": 0
+                },
+                "replicationRole": "None",
+                "network": {},
+                "backup": {
+                    "backupRetentionDays": 1,
+                    "geoRedundantBackup": "Disabled"
+                },
+                "highAvailability": {
+                    "mode": "Disabled"
                 }
-              }
-            ]
-          }
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_name'), '/information_schema')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_name'))]"
+            ],
+            "properties": {
+                "charset": "utf8",
+                "collation": "utf8_general_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_name'), '/mysql')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_name'))]"
+            ],
+            "properties": {
+                "charset": "latin1",
+                "collation": "latin1_swedish_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_name'), '/performance_schema')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_name'))]"
+            ],
+            "properties": {
+                "charset": "utf8",
+                "collation": "utf8_general_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_name'), '/sys')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_name'))]"
+            ],
+            "properties": {
+                "charset": "utf8",
+                "collation": "utf8_general_ci"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_name'), '/AllowAll_2022-11-21_12-37-40')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_name'))]"
+            ],
+            "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "255.255.255.255"
+            }
+        },
+        {
+            "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
+            "apiVersion": "2021-12-01-preview",
+            "name": "[concat(parameters('flexibleServers_mysql_okcu_name'), '/ClientIPAddress_2022-11-21_12-38-33')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('flexibleServers_mysql_okcu_name'))]"
+            ],
+            "properties": {
+                "startIpAddress": "139.78.253.192",
+                "endIpAddress": "139.78.253.192"
+            }
         }
-      },
-      {
-        "type": "Microsoft.DBforMySQL/flexibleServers/databases",
-        "apiVersion": "[variables('api')]",
-        "name": "[concat(parameters('myocu-sql-cld'),'/',parameters('databaseName'))]",
-        "dependsOn": [
-          "[concat('Microsoft.DBforMySQL/flexibleServers/', parameters('myocu-sql-cld'))]"
-        ],
-        "properties": {
-          "charset": "utf8",
-          "collation": "utf8_general_ci"
-        }
-      }
     ]
-  }
+}
